@@ -8,7 +8,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -83,6 +85,7 @@ public class CreditScoreView extends View {
         scorePaint.setAntiAlias(true);
         scorePaint.setTextSize(scoreSize);
         scorePaint.setColor(Color.WHITE);
+        // set word to be center
         scorePaint.setTextAlign(Paint.Align.CENTER);
         scorePaint.setStyle(Paint.Style.FILL);
 
@@ -174,11 +177,12 @@ public class CreditScoreView extends View {
         }
 
         //绘制填充区域的边界
-        path.close();
-        valuePaint.setStyle(Paint.Style.STROKE);
-        canvas.drawPath(path, valuePaint);
+//        path.close();
+//        valuePaint.setStyle(Paint.Style.STROKE);
+//        canvas.drawPath(path, valuePaint);
 
         //绘制填充区域
+        path.close();
         valuePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         canvas.drawPath(path, valuePaint);
     }
@@ -194,7 +198,19 @@ public class CreditScoreView extends View {
         for (int i = 0; i < dataCount; i++) {
             score += data[i];
         }
-        canvas.drawText(score + "", centerX, centerY + scoreSize / 2, scorePaint);
+        float scoreWidth = scorePaint.measureText(String.valueOf(score));
+
+        Rect rect = new Rect();
+        scorePaint.getTextBounds(score + "", 0, Integer.toString(score).length() - 1, rect);
+
+//        canvas.drawText(score + "", centerX, centerY + scoreSize / 2, scorePaint);
+        Log.d("ernest", "top:" + rect.top + ",rect.bottom:" + rect.bottom + ",rect.left:" + rect.left + ",rect.right:" + rect.right);
+
+        Paint.FontMetrics fontMetrics = scorePaint.getFontMetrics();
+        // 字体居中显示： 字体的真实高度的一半，底边是到descent的距离，故而减去 descent的距离，便是baseLineY的实际值
+        // fontMetrics的值均为相对值，相对于baseLineY 的值
+        int height = (int) ((fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent);
+        canvas.drawText(score + "", centerX, centerY + height, scorePaint);
     }
 
     /**
@@ -212,16 +228,38 @@ public class CreditScoreView extends View {
             float titleWidth = titlePaint.measureText(titles[i]);
 
             //底下两个角的坐标需要向下移动半个图片的位置（1、2）
-            if (i == 1) {
-                y += (iconHeight / 2);
-            } else if (i == 2) {
-                x -= titleWidth;
-                y += (iconHeight / 2);
-            } else if (i == 3) {
-                x -= titleWidth;
-            } else if (i == 4) {
-                x -= titleWidth / 2;
+            switch (i) {
+                case 0:
+                    x -= titleWidth / 2;
+                    break;
+                case 1:
+                    x -= titleWidth;
+                    break;
+                case 2:
+                    x -= titleWidth;
+                    y += (iconHeight / 2);
+                    break;
+                case 3:
+                    y += (iconHeight / 2);
+                    break;
+                case 4:
+
+                    break;
+                default:
+                    break;
             }
+
+//            if (i == 1) {
+//                y += (iconHeight / 2);
+//            } else if (i == 2) {
+//                x -= titleWidth;
+//                y += (iconHeight / 2);
+//            } else if (i == 3) {
+//                x -= titleWidth;
+//            } else if (i == 4) {
+//                x -= titleWidth / 2;
+//            }
+
             canvas.drawText(titles[i], x, y, titlePaint);
         }
     }
@@ -243,22 +281,47 @@ public class CreditScoreView extends View {
 
             //上面获取到的x、y坐标是标题左下角的坐标
             //需要将图标移动到标题上方居中位置
-            if (i == 0) {
-                x += (titleWidth - iconWidth) / 2;
-                y -= (iconHeight + getTextHeight(titlePaint));
-            } else if (i == 1) {
-                x += (titleWidth - iconWidth) / 2;
-                y -= (iconHeight / 2 + getTextHeight(titlePaint));
-            } else if (i == 2) {
-                x -= (iconWidth + (titleWidth - iconWidth) / 2);
-                y -= (iconHeight / 2 + getTextHeight(titlePaint));
-            } else if (i == 3) {
-                x -= (iconWidth + (titleWidth - iconWidth) / 2);
-                y -= (iconHeight + getTextHeight(titlePaint));
-            } else if (i == 4) {
-                x -= iconWidth / 2;
-                y -= (iconHeight + getTextHeight(titlePaint));
+            switch (i) {
+                case 0:
+                    x -= iconWidth / 2;
+                    y -= (iconHeight + getTextHeight(titlePaint));
+                    break;
+                case 1:
+                    x -= (titleWidth + iconWidth) / 2;
+                    y -= (iconHeight + getTextHeight(titlePaint));
+                    break;
+                case 2:
+                    x -= (titleWidth + iconWidth) / 2;
+                    y -= iconHeight / 2 + getTextHeight(titlePaint);
+                    break;
+                case 3:
+                    x += (titleWidth - iconWidth) / 2;
+                    y -= iconHeight / 2 + getTextHeight(titlePaint);
+                    break;
+                case 4:
+                    x += (titleWidth - iconWidth) / 2;
+                    y -= (iconHeight + getTextHeight(titlePaint));
+                    break;
+                default:
+                    break;
             }
+
+//            if (i == 0) {
+//                x += (titleWidth - iconWidth) / 2;
+//                y -= (iconHeight + getTextHeight(titlePaint));
+//            } else if (i == 1) {
+//                x += (titleWidth - iconWidth) / 2;
+//                y -= (iconHeight / 2 + getTextHeight(titlePaint));
+//            } else if (i == 2) {
+//                x -= (iconWidth + (titleWidth - iconWidth) / 2);
+//                y -= (iconHeight / 2 + getTextHeight(titlePaint));
+//            } else if (i == 3) {
+//                x -= (iconWidth + (titleWidth - iconWidth) / 2);
+//                y -= (iconHeight + getTextHeight(titlePaint));
+//            } else if (i == 4) {
+//                x -= iconWidth / 2;
+//                y -= (iconHeight + getTextHeight(titlePaint));
+//            }
 
             canvas.drawBitmap(bitmap, x, y, titlePaint);
         }
@@ -274,6 +337,7 @@ public class CreditScoreView extends View {
         return getPoint(position, 0, 1);
     }
 
+
     /**
      * 获取雷达图上各个点的坐标（包括维度标题与图标的坐标）
      *
@@ -283,31 +347,39 @@ public class CreditScoreView extends View {
      * @return 坐标
      */
     private Point getPoint(int position, int radarMargin, float percent) {
-        int x = 0;
-        int y = 0;
 
-        if (position == 0) {
-            x = (int) (centerX + (radius + radarMargin) * Math.sin(radian) * percent);
-            y = (int) (centerY - (radius + radarMargin) * Math.cos(radian) * percent);
+        int x1 = 0;
+        int y1 = 0;
+        x1 = (int) (centerX + (radius + radarMargin) * Math.cos(position * radian + Math.PI / 2) * percent);
+        y1 = (int) (centerY - (radius + radarMargin) * Math.sin(position * radian + Math.PI / 2) * percent);
+        Log.d("ernest", "getPoint1 position:" + position + "x:" + x1 + ",y:" + y1);
 
-        } else if (position == 1) {
-            x = (int) (centerX + (radius + radarMargin) * Math.sin(radian / 2) * percent);
-            y = (int) (centerY + (radius + radarMargin) * Math.cos(radian / 2) * percent);
+//        int x = 0;
+//        int y = 0;
+//
+//        if (position == 0) {
+//            x = (int) (centerX + (radius + radarMargin) * Math.sin(radian) * percent);
+//            y = (int) (centerY - (radius + radarMargin) * Math.cos(radian) * percent);
+//
+//        } else if (position == 1) {
+//            x = (int) (centerX + (radius + radarMargin) * Math.sin(radian / 2) * percent);
+//            y = (int) (centerY + (radius + radarMargin) * Math.cos(radian / 2) * percent);
+//
+//        } else if (position == 2) {
+//            x = (int) (centerX - (radius + radarMargin) * Math.sin(radian / 2) * percent);
+//            y = (int) (centerY + (radius + radarMargin) * Math.cos(radian / 2) * percent);
+//
+//        } else if (position == 3) {
+//            x = (int) (centerX - (radius + radarMargin) * Math.sin(radian) * percent);
+//            y = (int) (centerY - (radius + radarMargin) * Math.cos(radian) * percent);
+//
+//        } else if (position == 4) {
+//            x = centerX;
+//            y = (int) (centerY - (radius + radarMargin) * percent);
+//        }
+//        Log.d("ernest", "getPoint position:" + position + "x:" + x + ",y:" + y);
 
-        } else if (position == 2) {
-            x = (int) (centerX - (radius + radarMargin) * Math.sin(radian / 2) * percent);
-            y = (int) (centerY + (radius + radarMargin) * Math.cos(radian / 2) * percent);
-
-        } else if (position == 3) {
-            x = (int) (centerX - (radius + radarMargin) * Math.sin(radian) * percent);
-            y = (int) (centerY - (radius + radarMargin) * Math.cos(radian) * percent);
-
-        } else if (position == 4) {
-            x = centerX;
-            y = (int) (centerY - (radius + radarMargin) * percent);
-        }
-
-        return new Point(x, y);
+        return new Point(x1, y1);
     }
 
     /**
